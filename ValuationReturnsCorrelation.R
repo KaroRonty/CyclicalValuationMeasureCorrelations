@@ -10,52 +10,36 @@ for(i in 1:30){
 }
 returns <- returns %>% select(-V1)
 
-
-# CAPE calculation for the next i years
-capes <- as.data.frame(matrix(nrow = nrow(full_data)))
-temp2 <- NA
-for(i in 1:30){
-  for(j in 1:I(nrow(full_data) - 12)){
-    temp2[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$Earnings[j:I(j + i * 12 - 1)])
-  }
-  temp2 <- temp2[1:nrow(full_data)]
-  capes <- cbind(capes, temp2)
-  temp2 <- NA
-  colnames(capes)[i + 1] <- paste0("cape_", i)
-}
-capes <- capes %>% select(-V1) 
-
 # Calculate book value
 full_data$BookValue <- as.numeric(full_data$bm) * full_data$Price
 
-# CAPB calculation for the next i years
-capbs <- as.data.frame(matrix(nrow = nrow(full_data)))
-temp3 <- NA
-for(i in 1:30){
-  for(j in 1:I(nrow(full_data) - 12)){
-    temp3[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$BookValue[j:I(j + i * 12 - 1)])
+# Valuation measure calculation for the next i years
+capes <- capbs <- capds <- NA
+calculate_measures <- function(measure){
+  measures <- as.data.frame(matrix(nrow = nrow(full_data)))
+  temp_df <- NA
+  for(i in 1:30){
+    for(j in 1:I(nrow(full_data) - 12)){
+      if(measure == "capes"){
+        temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$Earnings[j:I(j + i * 12 - 1)])
+      } else if(measure == "capbs"){
+        temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$BookValue[j:I(j + i * 12 - 1)])
+      } else if(measure == "capds"){
+        temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$Dividend[j:I(j + i * 12 - 1)])
+      }
+    }
+    temp_df <- temp_df[1:nrow(full_data)]
+    measures <- cbind(measures, temp_df)
+    temp_df <- NA
+    colnames(measures)[i + 1] <- paste0("measure_", i)
   }
-  temp3 <- temp3[1:nrow(full_data)]
-  capbs <- cbind(capbs, temp3)
-  temp3 <- NA
-  colnames(capbs)[i + 1] <- paste0("capb_", i)
+  measures <- measures %>% select(-V1) 
+  assign(measure, measures, envir = .GlobalEnv) 
 }
-capbs <- capbs %>% select(-V1)
 
-# CAPD calculation for the next i years
-capds <- as.data.frame(matrix(nrow = nrow(full_data)))
-temp4 <- NA
-for(i in 1:30){
-  for(j in 1:I(nrow(full_data) - 12)){
-    temp4[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$Dividend[j:I(j + i * 12 - 1)])
-  }
-  temp4 <- temp4[1:nrow(full_data)]
-  capds <- cbind(capds, temp4)
-  temp4 <- NA
-  colnames(capds)[i + 1] <- paste0("capd_", i)
-}
-capds <- capds %>% select(-V1)
-
+calculate_measures("capes")
+calculate_measures("capbs")
+calculate_measures("capds")
 
 # Calculate correlations and save into csv for formatting
 correlate <- function(measure){
