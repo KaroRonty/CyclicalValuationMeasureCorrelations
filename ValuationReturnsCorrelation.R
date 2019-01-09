@@ -10,8 +10,9 @@ for(i in 1:30){
 }
 returns <- returns %>% select(-V1)
 
-# Calculate book value
-full_data$BookValue <- as.numeric(full_data$bm) * full_data$Price
+# Calculate book value & real book value
+full_data$BookValue <- as.numeric(full_data$bm) * full_data$P
+full_data$RealBookValue <- full_data$BookValue * last(full_data$CPI) / full_data$CPI
 
 # Valuation measure calculation for the next i years
 capes <- capbs <- capds <- NA
@@ -23,7 +24,7 @@ calculate_measures <- function(measure){
       if(measure == "capes"){
         temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$Earnings[j:I(j + i * 12 - 1)])
       } else if(measure == "capbs"){
-        temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$BookValue[j:I(j + i * 12 - 1)])
+        temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$RealBookValue[j:I(j + i * 12 - 1)])
       } else if(measure == "capds"){
         temp_df[j + i * 12] <- full_data$Price[j + i * 12] / mean(full_data$Dividend[j:I(j + i * 12 - 1)])
       }
