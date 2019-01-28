@@ -1,4 +1,7 @@
 source("https://github.com/KaroRonty/ShillerGoyalDataRetriever/raw/master/ShillerGoyalDataRetriever.r")
+library(ggplot2)
+library(reshape2)
+library(tidyverse)
 
 # Return calculation for the next i years
 returns <- as.data.frame(matrix(nrow = nrow(full_data)))
@@ -51,9 +54,31 @@ correlate <- function(measure){
     }
   }
   colnames(correlations_manual) <- 1:30
+  assign(paste0(measure, "_corr"), correlations_manual, envir = .GlobalEnv)
   write.csv(correlations_manual, paste0(measure, "_correlations.csv"))
 }
 
 correlate("capes")
 correlate("capbs")
 correlate("capds")
+
+# Make correlation graphs
+
+plot_corrs <- function(measure){  
+  correlations_manual <- get(paste0(measure, "_corr"))
+  correlations_manual <- correlations_manual ^ 2
+  graph_data <- as.data.frame(t(correlations_manual))
+  graph_data$col <- rownames(graph_data)
+  graph_data <- melt(graph_data, variable.name = "Formation", id.vars = c("col"))
+  graph_data$Formation <- str_replace(graph_data$Formation, "V", "")
+  graph_data$Formation <- factor(graph_data$Formation, levels = unique(graph_data$Formation))
+  
+  ggplot(graph_data, aes(x = as.numeric(col), y = value, color = Formation)) +
+    geom_line() +
+    xlab("Measurement period") +
+    ylab("R^2")
+}
+
+plot_corrs("capes")
+plot_corrs("capbs")
+plot_corrs("capds")
