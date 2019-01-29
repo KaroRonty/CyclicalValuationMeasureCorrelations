@@ -1,6 +1,6 @@
 # CyclicalValuationMeasureCorrelations
 Correlation analysis of cyclically adjusted valuation measures (CAPE, CAPD and CAPB) and subsequent returns.
-Outputs csv files containing the correlations for each measurement and formation periods.
+Outputs csv files containing the correlations for each measurement and formation periods (in years).
 Also outputs plots showing the r-squared of each valuation measure for each measurement and formation period.
 
 ![CAPE](https://github.com/KaroRonty/CyclicalValuationMeasureCorrelations/blob/master/CAPE_plot.PNG)
