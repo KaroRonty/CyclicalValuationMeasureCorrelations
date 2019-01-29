@@ -63,7 +63,6 @@ correlate("capbs")
 correlate("capds")
 
 # Make correlation graphs
-
 plot_corrs <- function(measure){  
   correlations_manual <- get(paste0(measure, "_corr"))
   correlations_manual <- correlations_manual ^ 2
@@ -76,9 +75,23 @@ plot_corrs <- function(measure){
   ggplot(graph_data, aes(x = as.numeric(col), y = value, color = Formation)) +
     geom_line() +
     xlab("Measurement period") +
-    ylab("R^2")
+    ylab("R^2") + 
+    ggtitle(paste(toupper(substr(measure, 1, 4)), "correlation with subsequent returns"))
 }
 
 plot_corrs("capes")
 plot_corrs("capbs")
 plot_corrs("capds")
+
+# Plot rolling 10-year correlations and trend
+cor_holder <- c()
+for(i in 1:I(nrow(full_data) - 120)){
+  cor_holder <- c(cor_holder, cor(full_data$tenyear[i:I(i + 119)],
+                                  full_data$CAPE[i:I(i + 119)]) ^ 2)
+}
+cor_holder <- as.numeric(na.omit(cor_holder))
+plot(cor_holder, type = "l", ann = F)
+abline(lm(cor_holder ~ I(1:length(cor_holder))))
+title(main = "10-year rolling correlations of CAPE and returns",
+      xlab = "Time",
+      ylab = "Rolling correlation")
